@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map</title>
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.1.min.js"
+      integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ="
+      crossorigin="anonymous"
+    ></script>
+
+    <style>
+      #map {
+        height: 500px;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><center>Maps</center></h1>
+    <br />
+
+    <div
+      class="container"
+      style="
+        max-width: 500px;
+        margin: auto;
+        padding-left: 10px;
+        background: rgb(231, 228, 228);
+      "
+    >
+      <form id="sumbitBtn">
+        <label>Address : </label>
+        <input
+          type="text"
+          name="address"
+          id="address"
+          style="margin-left: 28px"
+        />
+        <br /><br />
+
+        <label>Latitude :</label>
+        <input type="text" name="lat" id="lat" style="margin-left: 26px" />
+        <br /><br />
+
+        <label>Longitude :</label>
+        <input type="text" name="lng" id="lng" style="margin-left: 12px" />
+        <br /><br />
+
+        <input type="submit" value="submit" id="submit" />
+      </form>
+    </div>
+    <br />
+
+    <div id="search">
+      <input type="text" id="searchMe" value="" placeholder="Search for Places..." >
+      <input type="submit" onclick="search()" value="Search" />
+    </div><br>
+
+    <div id="map"></div>
+
+    <script>
+      var lati = 28.7041;
+      var longi = 77.1025;
+
+      $("#sumbitBtn").on("submit", function (event) {
+        event.preventDefault();
+        var str = $(this).serialize();
+        console.log(str);
+
+        lat = $("#lat").val();
+        lati = parseFloat(lat);
+        console.log("lat", lati);
+
+        long = $("#lng").val();
+        longi = parseFloat(long);
+        console.log("lng", longi);
+
+        $.ajax({
+          method: "post",
+          url: "/",
+          data: str,
+          success: function (s) {
+            console.log("coming from server", s);
+          },
+          error: function (err) {
+            console.log(err);
+          },
+        });
+
+        initMap();
+      });
+
+      function search() {
+        var searchMe = $("#searchMe").val();
+
+        $.ajax({
+          method: "post",
+          url: "/search",
+          data: { searchM: searchMe },
+          success: function (ss) {
+            console.log("data found", ss);
+            var mydata = ss.data;
+            console.log("data found--lat--", mydata[0].Latitude);
+            console.log("data found--lng--", mydata[0].Longitude);
+
+            lati = mydata[0].Latitude;
+            longi = mydata[0].Longitude;
+            initMap();
+          },
+          error: function (err) {
+            console.log(err);
+          },
+        });
+      }
+
+      function initMap() {
+        var map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: lati, lng: longi },
+          zoom: 8,
+        });
+
+        var marker = new google.maps.Marker({
+          position: { lat: lati, lng: longi },
+          map: map,
+        });
+      }
+    </script>
+
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDw8tD84_tujZX5-Lo17RgA74KNQyuCJyc&callback=initMap"
+    ></script>
+  </body>
+</html>
